@@ -7,9 +7,10 @@
   "keywords": [
     "unity"
   ],
-  "documentationUrl": "",
-  "changelogUrl": "",
-  "licensesUrl": "",
+  "com.unity.sharp-zip-lib" : "1.3.2",
+  "documentationUrl": "https://github.com/Studious-Games/StudiousBackupPackage/blob/master/README.md",
+  "changelogUrl": "https://github.com/Studious-Games/StudiousBackupPackage/blob/master/CHANGELOG.md",
+  "licensesUrl": "https://github.com/Studious-Games/StudiousBackupPackage/blob/master/LICENSE",
   "hideInEditor": false,
   "author": {
     "name": "Studious Games"
