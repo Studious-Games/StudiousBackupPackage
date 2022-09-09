@@ -235,7 +235,7 @@ namespace Studious
             if (_backingUp && !EditorApplication.isPlaying)
                 return;
 
-            string path = string.Format("{0}/{1}_backup_{2}.zip", _saveLocation, _productNameForFile, DateTime.Now.ToString(@"yyyy-dd-MM-HH-mm"));
+            string path = string.Format("{0}/{1}_backup_{2}.zip", _saveLocation, _productNameForFile, DateTime.Now.ToString("yyyy-MM-dd-HH-mm"));
             string assetsPath = Application.dataPath;
             string projectSettingsPath = Application.dataPath.Replace("/Assets", "/ProjectSettings");
             double startTime = EditorApplication.timeSinceStartup;
