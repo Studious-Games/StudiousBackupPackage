@@ -1,18 +1,18 @@
 
-# Studious Pooling System
+# Studious Backup Package
  
- Is a small very simple library, that helps Pool Objects. 
- 
- Why another Object Pooling System? 
+Is a small very simple library, that helps manage your project backups. 
 
-I wrote this a long time ago for my projects, as there was nothing that would work the way I needed a pooling system to work. I have since modified it slightly and decided that it would be good to share it with others.
+I wrote this because I was seeing so many people using sync services like OneDrive, to store their projects. The problem with this is that it doesn't work with Unity well.
 
-So what makes this Object Pool any different to others, well others focus more on a GameObject rather than be generic. What that means is you can instantiate a prefab by its script rather than its Game Object, then store that in the Object Pool instead of the GameObject. This helps reduce having to use GetComponents, when everything from the GameObject to Transform will be stored.
+Once the package has been installed, you have two options to make a backup, the first is from the tools menu along the top, and under Studious Backup, there is an option to run a backup.
+
+The package is configurable, by going to the preferences section, by going to the Edit menu and selecting Preferences.
 
 
 ## Installation
 
-Studious Pooling System is best installed as a package, this can be done in a number of ways, the best is to use git and install via the package manage.
+Studious Backup Package is best installed as a package, this can be done in a number of ways, the best is to use git and install via the Package Manager.
 
 ###### **Via Git Hub** 
 
@@ -30,126 +30,28 @@ Installing or unzipping into the projects package folder, will work out of the b
 
 ## Usage
 
-Getting started with this pooling system is rather easy, all you need to do is replace certain aspects of your code with entry points into this Object Pool.
+Usage is very simple, as explained above you can run a backup from the menus along the top, as well as being able to run a Back Up from the preferences section.
 
-For example, in an FPS you might have a Gun Script like the following, where a bullet is instantiated by its script rather than a GameObject.
+## **Settings**
 
-```CS
+###### Zip mode
 
-public void class BulletSpawn : MonoBehaviour
-{
-    [SerializeField] private Bullet _bulletPrefab;
-    [SerializeField] private Transform _spawnPosition;
+At this present time, we only support the 7Zip library that comes with Unity. In the future, we have plans to support more options of Libraries to use, including FastZip.
 
-    private void Update()
-    {
-        if (CanFire())
-        {
-            Instantiate(_bulletPrefab, _spawnPosition.position, _spawnPosition.transform.parent.rotation);
-        }
-    }
-}
+###### Log To Console
 
-```
+Fairly straight forward option, that logs what is happening to the console.
 
-And a typical bullet script might look something like this
+###### Backup On Exit
 
-```CS
-public class Bullet : MonoBehaviour
-{
-    [SerializeField] private float _aliveTime;
-    [SerializeField] private float _movementSpeed;
+This option allows the package to automatically create a Back UP when you exit the Editor, please be aware that the larger the project, the longer it will take to do a Back Up. When using this option, it might appear that the Editor has hung.
 
-    private void Awake()
-    {
-        Destroy(gameObject, _aliveTime);
-    }
+We are working on a way to let the user know that something is happening.
 
-    private void Update()
-    {
-        transform.position += transform.forward * Time.deltaTime * _movementSpeed;
-    }
-}
-```
+###### Custom backups folder
 
-To make these scripts use the Object Pooling system, we can make small changes to the scripts, first lets make a change to the BulletSpawn script, by adding the following code.
+By default the package will create a backup folder inside the root of your project, this might be ideal for most users. This option allows for users to select the place where Back Ups will be stored, across all projects.
 
-```CS
-using Studious.Pooling;
+###### Auto Backup
 
-public class BulletSpawn : MonoBehaviour
-{
-    private ObjectPool<Bullet> _objectPool;
-
-    private void Awake()
-    {
-        _objectPool = new ObjectPool<Bullet>(_bulletPrefab, 10);
-    }
-}
-```
-
-This change allows the pool to be setup, where we pass in the prefab, and the quantity that we wish to instantiate into the pool before we begin to use it. We now need to make one more change to the BulletSpawn script, so that we use the ObjectPool and not Instantiate.
-
-And we make the following change to the script.
-
-```CS
-    if (CanFire())
-    {
-        _objectPool.Pull(_spawnPosition.position, _spawnPosition.transform.parent.rotation);
-    }
-```
-
-As you can see the replacement is very simple and almost identical to how you would Instantite a prefab. The two parameters are self explanatory, and are the position and rotation that you want the object to appear and the rotation it should have.
-
-The Bullet script is a little bit different, and we would now write it as the following script.
-
-```CS
-using System;
-using System.Collections;
-using UnityEngine;
-
-//Interface used to make sure required methods are implemented
-public class Bullet : MonoBehaviour, IPoolable<Bullet>
-{
-    [SerializeField] private float _aliveTime;
-    [SerializeField] private float _movementSpeed;
-
-    private WaitForSeconds _destroyTime;
-    private Action<Bullet> _returnToPool;
-
-    //Is called when the object is removed from the pool, and setups
-    // a callback return for returning the object back to the pool
-    public void Initialize(Action<Bullet> returnAction)
-    {
-        _returnToPool = returnAction;
-        StartCoroutine(KeepAlive());
-    }
-
-    //Callback used for returning the object back to the pool.
-    public void ReturnToPool()
-    {
-        _returnToPool?.Invoke(this);
-    }
-
-    private void Awake()
-    {
-        _destroyTime = new WaitForSeconds(5.0f);
-    }
-
-    private void Update()
-    {
-        transform.position += transform.forward * Time.deltaTime * _movementSpeed;
-    }
-
-    //Keeps the Bullet alive before returning it back to the Object Pool.
-    private IEnumerator KeepAlive()
-    {
-        yield return _destroyTime;
-        ReturnToPool();
-    }
-}
-```
-
-The code here is self explanatory, and ensures that the bullet stays alive for the time it is required, naturally you would add the code to then check if it hits what it needs to hit, and then return it to the pool. THe example above is just an example that keep it alive for a period of time before we return it back to the Object Pool.
-
-
+This section allows for the package to auto Back Up while you are working, and as it runs in the background, it will not interfere with your work flow. If logging is enabled to the console, the package will display when it has started and finished in the console.
