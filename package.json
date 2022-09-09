@@ -1,13 +1,12 @@
 {
   "name": "com.studious.studiousbackuppackage",
   "displayName": "Studious Backup Package",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "unity": "2020.3",
   "unityRelease": "0f1",
   "keywords": [
     "unity"
   ],
-  "com.unity.sharp-zip-lib" : "1.3.2",
   "documentationUrl": "https://github.com/Studious-Games/StudiousBackupPackage/blob/master/README.md",
   "changelogUrl": "https://github.com/Studious-Games/StudiousBackupPackage/blob/master/CHANGELOG.md",
   "licensesUrl": "https://github.com/Studious-Games/StudiousBackupPackage/blob/master/LICENSE",

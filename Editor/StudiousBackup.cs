@@ -242,11 +242,11 @@ namespace Studious
 
                 if (zip.Process.ExitCode == 0)
                 {
-                    int zipSize = File.ReadAllBytes(path).Length;
+                    FileInfo fileInfo = new FileInfo(path);
                     string time = (EditorApplication.timeSinceStartup - startTime).ToString("0.00");
 
                     if (_logToConsole)
-                        Debug.LogFormat("project has been backed up to {0} in {1} seconds.", EditorUtility.FormatBytes(zipSize), time);
+                        Debug.LogFormat("Backuped project into {0} in {1} seconds", FormatFileSize( fileInfo.Length) , time);
                 }
                 else if (_logToConsole)
                     Debug.LogWarning("Something went wrong with the backup.");
@@ -279,7 +279,15 @@ namespace Studious
             {
                 await Task.Yield();
             }
+        }
 
+        public static string FormatFileSize(long bytes)
+        {
+            var unit = 1024;
+            if (bytes < unit) { return $"{bytes} B"; }
+
+            var exp = (int)(Math.Log(bytes) / Math.Log(unit));
+            return $"{bytes / Math.Pow(unit, exp):F2} {("KMGTPE")[exp - 1]}B";
         }
     }
 
