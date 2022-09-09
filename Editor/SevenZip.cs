@@ -50,7 +50,7 @@ namespace Studious
             _startInfo.UseShellExecute = false;
             _startInfo.RedirectStandardOutput = true;
             _startInfo.RedirectStandardError = true;
-            _startInfo.Arguments += string.Format("a -tzip -mx=9 -bd \"{0}\" ", _output);
+            _startInfo.Arguments += string.Format("a -tzip -bd \"{0}\" ", _output);
 
             for (int i = 0; i < _sources.Length; i++)
                 if (Directory.Exists(_sources[i]) || File.Exists(_sources[i]))
