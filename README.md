@@ -9,6 +9,11 @@ Once the package has been installed, you have two options to make a backup, the 
 
 The package is configurable, by going to the preferences section, by going to the Edit menu and selecting Preferences.
 
+## Support Me
+
+If you want to help support me, for the price of a coffee, it would be gratefully accepted.
+
+[Buy me a coffee](https://www.paypal.com/donate/?business=B6CJ9P4LUCDR8&amount=3.99&no_recurring=0&item_name=I+am+a+retired+developer%2C+who+likes+to+create+useful+tools.+And+I+hope+that+you+would+help+fund+more+projects+like+this+one.&currency_code=USD)
 
 ## Installation
 
