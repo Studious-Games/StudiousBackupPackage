@@ -1,0 +1,18 @@
+{
+  "name": "com.studious.studiousbackuppackage",
+  "displayName": "Studious Backup Package",
+  "version": "1.0.0",
+  "unity": "2020.3",
+  "unityRelease": "0f1",
+  "keywords": [
+    "unity"
+  ],
+  "documentationUrl": "",
+  "changelogUrl": "",
+  "licensesUrl": "",
+  "hideInEditor": false,
+  "author": {
+    "name": "Studious Games"
+  },
+  "type": "library"
+}
