@@ -23,6 +23,7 @@ namespace Studious
 
             EditorApplication.update += () => {
                 if (DateTime.Now.Subtract(_lastBackup).Ticks > _backupTimeSpan.Ticks && CanBackup() && _autoBackuo)
+                {
                     try
                     {
                         StartBackup();
@@ -33,6 +34,7 @@ namespace Studious
                         Debug.LogException(e);
                         _autoBackuo = false;
                     }
+                }
             };
         }
 
@@ -42,9 +44,9 @@ namespace Studious
         private static bool _backingUp = false;
 
         private static readonly GUIContent _zipModeContent = new GUIContent("Zip mode", "The application that will be used to Back Up this project.");
-        private static readonly GUIContent packLevelContent = new GUIContent("Pack level", "Zip-mode compression level, a higher value may decrease performance, while a lower value may increase the file size\n\n0=Store only, without compression.");
-        private static readonly GUIContent earlyOutContent = new GUIContent("Early out (%)", "The worst detected compression for switching to store.");
-        private static readonly GUIContent threadsContent = new GUIContent("Threads", "Worker threads count.");
+        //private static readonly GUIContent packLevelContent = new GUIContent("Pack level", "Zip-mode compression level, a higher value may decrease performance, while a lower value may increase the file size\n\n0=Store only, without compression.");
+        //private static readonly GUIContent earlyOutContent = new GUIContent("Early out (%)", "The worst detected compression for switching to store.");
+        //private static readonly GUIContent threadsContent = new GUIContent("Threads", "Worker threads count.");
         private static readonly GUIContent _useCustomSaveLocationContent = new GUIContent("Custom backups folder", "Specify the folder to store the backup\nIf enabled, backups from all projects will be store at this location, if disabled each backup will be store on its own project folder.");
         private static readonly GUIContent _customSaveLocationContent = new GUIContent("Backup folder location", "The folder to store the Back Ups.");
         private static readonly GUIContent _logToConsoleContent = new GUIContent("Log to console", "Log events to the console.");
@@ -130,28 +132,21 @@ namespace Studious
         }
         #endregion
 
-        //-----------------------------------------------------------------------------
-        //
-        //-----------------------------------------------------------------------------
         [SettingsProvider]
         public static SettingsProvider CreateInputSettingsProvider()
         {
             return new CronusBackupProvider(_settingsPath, SettingsScope.User);
         }
 
-        //-----------------------------------------------------------------------------
-        //
-        //-----------------------------------------------------------------------------
         public override void OnGUI(string searchContext)
         {
             if (!SevenZip.IsSupported /*&& !FastZip.isSupported*/)
             {
-                EditorGUILayout.HelpBox("7Zip aren't supported, Zip Backup won't work", MessageType.Error);
+                EditorGUILayout.HelpBox("7Zip isn't supported, Zip Backup won't work", MessageType.Error);
                 return;
             }
             //else if (!SevenZip.IsSupported)
             //    EditorGUILayout.HelpBox("7z.exe was not found, 7Zip won't work", MessageType.Warning);
-
 
             _scroll = EditorGUILayout.BeginScrollView(_scroll, false, false);
             GUI.enabled = SevenZip.IsSupported;
@@ -226,9 +221,6 @@ namespace Studious
             EditorGUILayout.EndHorizontal();
         }
 
-        //-----------------------------------------------------------------------------
-        //
-        //-----------------------------------------------------------------------------
         [MenuItem("Tools/Studios Backup/Backup Now")]
         public static void StartBackup()
         {
@@ -268,17 +260,11 @@ namespace Studious
                 _lastBackup = DateTime.Now;
         }
 
-        //-----------------------------------------------------------------------------
-        //
-        //-----------------------------------------------------------------------------
         private static bool CanBackup()
         {
             return !_backingUp && (/*FastZip.isSupported ||*/ SevenZip.IsSupported) && !EditorApplication.isPlaying;
         }
 
-        //-----------------------------------------------------------------------------
-        //
-        //-----------------------------------------------------------------------------
         private static void Quit()
         {
             if(_backupOnExit)
@@ -287,9 +273,6 @@ namespace Studious
             WaitForBackup();
         }
 
-        //-----------------------------------------------------------------------------
-        //
-        //-----------------------------------------------------------------------------
         private static async void WaitForBackup()
         {
             while(_backingUp)
