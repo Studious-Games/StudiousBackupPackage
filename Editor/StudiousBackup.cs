@@ -16,8 +16,8 @@ namespace Studious
         private static CronusBackupProvider _instance;
 
         private const string _packagePath = "Packages/com.studiousgames.studiousbackuppackage/Editor/Resources/Layouts/SettingsLayout.uxml";
-        private static readonly Version pluginVersion = new Version(1, 0, 2);
-        private static readonly DateTime pluginDate = new DateTime(2022, 09, 23);
+        private static readonly Version pluginVersion = new Version(1, 0, 3);
+        private static readonly DateTime pluginDate = new DateTime(2022, 10, 31);
         private static VisualElement _rootElement;
         private static List<string> _defaultFolders = new List<string> { "Assets", "Packages", "ProjectSettings", "UserSettings" };
         private static List<string> _items = new List<string>();
