@@ -1,81 +1,65 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
+using System.Linq;
 using UnityEditor;
+using UnityEngine.UIElements;
+using Newtonsoft.Json;
 using UnityEngine;
+using System.Threading.Tasks;
+using Studious;
 
 namespace Studious
 {
-
-    public enum ZipModes
+    class CronusBackupProvider : SettingsProvider
     {
-        _7Zip = 1,
-        //FastZip = 2
-    }
-
-    public class CronusBackupProvider : SettingsProvider
-    {
-        static CronusBackupProvider()
-        {
-            EditorApplication.quitting += Quit;
-
-            EditorApplication.update += () => {
-                if (DateTime.Now.Subtract(_lastBackup).Ticks > _backupTimeSpan.Ticks && CanBackup() && _autoBackuo)
-                {
-                    try
-                    {
-                        StartBackup();
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogWarning("Disabling auto backup, if the error persists contact the developer");
-                        Debug.LogException(e);
-                        _autoBackuo = false;
-                    }
-                }
-            };
-        }
-
-        public const string _settingsPath = "Preferences/Studious Games/Studious Backup";
         private static CronusBackupProvider _instance;
-        private static Vector2 _scroll;
+
+        private const string _packagePath = "Packages/com.studiousgames.studiousbackuppackage/Editor/Resources/Layouts/SettingsLayout.uxml";
+        private static readonly Version pluginVersion = new Version(1, 0, 2);
+        private static readonly DateTime pluginDate = new DateTime(2022, 09, 26);
+        private static VisualElement _rootElement;
+        private static List<string> _defaultFolders = new List<string> { "Assets", "Packages", "ProjectSettings", "UserSettings" };
+        private static List<string> _items = new List<string>();
         private static bool _backingUp = false;
 
-        private static readonly GUIContent _zipModeContent = new GUIContent("Zip mode", "The application that will be used to Back Up this project.");
-        //private static readonly GUIContent packLevelContent = new GUIContent("Pack level", "Zip-mode compression level, a higher value may decrease performance, while a lower value may increase the file size\n\n0=Store only, without compression.");
-        //private static readonly GUIContent earlyOutContent = new GUIContent("Early out (%)", "The worst detected compression for switching to store.");
-        //private static readonly GUIContent threadsContent = new GUIContent("Threads", "Worker threads count.");
-        private static readonly GUIContent _useCustomSaveLocationContent = new GUIContent("Custom backups folder", "Specify the folder to store the backup\nIf enabled, backups from all projects will be store at this location, if disabled each backup will be store on its own project folder.");
-        private static readonly GUIContent _customSaveLocationContent = new GUIContent("Backup folder location", "The folder to store the Back Ups.");
-        private static readonly GUIContent _logToConsoleContent = new GUIContent("Log to console", "Log events to the console.");
-        private static readonly GUIContent _autoBackupContent = new GUIContent("Auto backup", "Automatically Back Up in the specified time.");
-        private static readonly GUIContent _backupOnExitContent = new GUIContent("Backup On Exit", "Automatically Back Up the project when exiting Editor.");
-
-        public CronusBackupProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
-        {
-            label = "Studious Backup Package";
-            _instance = this;
-        }
+        public const string _settingsPath = "Preferences/Studious Games/Studious Backup";
 
         #region Properties
-        private static ZipModes _mode
+        private static int _mode
         {
-            get { return (ZipModes)EditorPrefs.GetInt("SBS.ZipMode", 1 == 0 ? 2 : 1); }
+            get { return EditorPrefs.GetInt("SBS.ZipMode", 1 == 0 ? 2 : 1) - 1; }
             set { EditorPrefs.SetInt("SBS.ZipMode", (int)value); }
-        }
-
-        private static bool _autoBackuo
-        {
-            get { return EditorPrefs.GetBool("SBS.AutoBackup", false); }
-            set { EditorPrefs.SetBool("SBS.AutoBackup", value); }
         }
 
         private static bool _logToConsole
         {
             get { return EditorPrefs.GetBool("SBS.LogToConsole", true); }
             set { EditorPrefs.SetBool("SBS.LogToConsole", value); }
+        }
+
+        private static bool _backupOnExit
+        {
+            get { return EditorPrefs.GetBool("SBS.BackupOnExit", false); }
+            set { EditorPrefs.SetBool("SBS.BackupOnExit", value); }
+        }
+
+        private static bool _autoBackup
+        {
+            get { return EditorPrefs.GetBool("SBS.AutoBackup", false); }
+            set { EditorPrefs.SetBool("SBS.AutoBackup", value); }
+        }
+
+        private static TimeSpan _backupTimeSpan
+        {
+            get { return TimeSpan.FromSeconds(EditorPrefs.GetInt("SBS.TimeSpan", (int)TimeSpan.FromHours(8).TotalSeconds)); }
+            set { EditorPrefs.SetInt("SBS.TimeSpan", (int)value.TotalSeconds); }
+        }
+
+        private static DateTime _lastBackup
+        {
+            get { return DateTime.Parse(PlayerPrefs.GetString("SBS.LastBackup", DateTime.MinValue.ToString())); }
+            set { PlayerPrefs.SetString("SBS.LastBackup", value.ToString()); }
         }
 
         private static bool _useCustomSaveLocation
@@ -88,6 +72,12 @@ namespace Studious
         {
             get { return EditorPrefs.GetString("SBS.CustomSave", string.Empty); }
             set { EditorPrefs.SetString("SBS.CustomSave", value); }
+        }
+
+        private static string _backFolders
+        {
+            get { return EditorPrefs.GetString("SBS.BackupFolders", string.Empty); }
+            set { EditorPrefs.SetString("SBS.BackupFolders", value); }
         }
 
         private static string _saveLocation
@@ -112,99 +102,156 @@ namespace Studious
                 return name;
             }
         }
-
-        private static TimeSpan _backupTimeSpan
-        {
-            get { return TimeSpan.FromSeconds(EditorPrefs.GetInt("SBS.TimeSpan", (int)TimeSpan.FromHours(8).TotalSeconds)); }
-            set { EditorPrefs.SetInt("SBS.TimeSpan", (int)value.TotalSeconds); }
-        }
-
-        private static DateTime _lastBackup
-        {
-            get { return DateTime.Parse(PlayerPrefs.GetString("SBS.LastBackup", DateTime.MinValue.ToString())); }
-            set { PlayerPrefs.SetString("SBS.LastBackup", value.ToString()); }
-        }
-
-        private static bool _backupOnExit
-        {
-            get { return EditorPrefs.GetBool("SBS.BackupOnExit", false); }
-            set { EditorPrefs.SetBool("SBS.BackupOnExit", value); }
-        }
         #endregion
 
-        [SettingsProvider]
-        public static SettingsProvider CreateInputSettingsProvider()
+
+        static CronusBackupProvider()
         {
-            return new CronusBackupProvider(_settingsPath, SettingsScope.User);
+            EditorApplication.quitting += Quit;
+
+            EditorApplication.update += () =>
+            {
+                if (DateTime.Now.Subtract(_lastBackup).Ticks > _backupTimeSpan.Ticks && CanBackup() && _autoBackup)
+                {
+                    try
+                    {
+                        DoBackup();
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning("Disabling auto backup, if the error persists contact the developer");
+                        Debug.LogException(e);
+                        _autoBackup = false;
+                    }
+                }
+            };
         }
 
-        public override void OnGUI(string searchContext)
+        public CronusBackupProvider(string path, SettingsScope scope = SettingsScope.User) : base(path, scope)
         {
-            if (!SevenZip.IsSupported /*&& !FastZip.isSupported*/)
+            label = "Studious Backup Package";
+            _instance = this;
+        }
+
+        public override void OnActivate(string searchContext, VisualElement root)
+        {
+            _rootElement = root;
+            InitializeEditor();
+        }
+
+        private static void InitializeEditor()
+        {
+            _rootElement.Clear();
+
+            VisualTreeAsset template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{_packagePath}");
+            TemplateContainer temple = template.CloneTree();
+
+            _items = JsonConvert.DeserializeObject<List<string>>(_backFolders);
+
+            if (_items == null)
+                _items = new List<string>(_defaultFolders);
+
+            _rootElement.Add(temple);
+
+            PopulateDropdown();
+            PopulateListView();
+            DisplayBackupTime(false);
+
+            Toggle autoBackup = _rootElement.Q<Toggle>("AutoBackup");
+            autoBackup.RegisterValueChangedCallback(HandleAutoBackup);
+
+            Toggle consoleLog = _rootElement.Q<Toggle>("ConsoleLog");
+            consoleLog.value = _logToConsole;
+            consoleLog.RegisterValueChangedCallback(evt =>
             {
-                EditorGUILayout.HelpBox("7Zip isn't supported, Zip Backup won't work", MessageType.Error);
-                return;
-            }
-            //else if (!SevenZip.IsSupported)
-            //    EditorGUILayout.HelpBox("7z.exe was not found, 7Zip won't work", MessageType.Warning);
+                _logToConsole = evt.newValue;
+            });
 
-            _scroll = EditorGUILayout.BeginScrollView(_scroll, false, false);
-            GUI.enabled = SevenZip.IsSupported;
-
-            EditorGUILayout.Space();
-            _mode = (ZipModes)EditorGUILayout.EnumPopup(_zipModeContent, _mode);
-            EditorGUILayout.Space();
-            _logToConsole = EditorGUILayout.Toggle(_logToConsoleContent, _logToConsole);
-            EditorGUILayout.Space();
-            _backupOnExit = EditorGUILayout.Toggle(_backupOnExitContent, _backupOnExit);
-            EditorGUILayout.Space();
-
-            if (_useCustomSaveLocation = EditorGUILayout.Toggle(_useCustomSaveLocationContent, _useCustomSaveLocation))
+            Toggle backupExit = _rootElement.Q<Toggle>("BackupExit");
+            backupExit.value = _backupOnExit;
+            backupExit.RegisterValueChangedCallback(evt =>
             {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.PrefixLabel(_customSaveLocationContent, EditorStyles.popup);
-                if (GUILayout.Button(string.IsNullOrEmpty(_customSaveLocation) ? "Browse..." : _customSaveLocation, EditorStyles.popup, GUILayout.Width(150f)))
+                _backupOnExit = evt.newValue;
+            });
+
+            Toggle backautoBackup = _rootElement.Q<Toggle>("AutoBackup");
+            backautoBackup.value = _autoBackup;
+            backautoBackup.RegisterValueChangedCallback(evt =>
+            {
+                _autoBackup = evt.newValue;
+            });
+
+            Label customLocation = _rootElement.Q<Label>("CustomLocation");
+            customLocation.text = _customSaveLocation;
+
+
+            SliderInt daySlider = _rootElement.Q<SliderInt>("DaySlider");
+            SliderInt hourSlider = _rootElement.Q<SliderInt>("HourSlider");
+            SliderInt minSlider = _rootElement.Q<SliderInt>("MinSlider");
+
+            int days = daySlider.value = _backupTimeSpan.Days;
+            int hours = hourSlider.value = _backupTimeSpan.Hours;
+            int minutes = minSlider.value = _backupTimeSpan.Minutes;
+
+            daySlider.RegisterValueChangedCallback(evt =>
+            {
+                days = evt.newValue;
+                UpdateMinuteSlider();
+            });
+
+            hourSlider.RegisterValueChangedCallback(evt =>
+            {
+                hours = evt.newValue;
+                UpdateMinuteSlider();
+            });
+
+            minSlider.RegisterValueChangedCallback(evt =>
+            {
+                minutes = evt.newValue;
+                UpdateMinuteSlider();
+            });
+
+            UpdateMinuteSlider();
+
+            void UpdateMinuteSlider()
+            {
+                if (days == 0 && hours == 0 && minutes < 5)
                 {
-                    string path = EditorUtility.OpenFolderPanel("Browse for backups folder", _customSaveLocation, "Backups");
-                    if (path.Length > 0)
-                        _customSaveLocation = path;
+                    minutes = 5;
+                    minSlider.value = minutes;
                 }
-                EditorGUILayout.EndHorizontal();
+                _backupTimeSpan = new TimeSpan(days, hours, minutes, 0);
+                UpdateNextBackup();
             }
-            else
-                _customSaveLocation = string.Empty;
 
-            EditorGUILayout.Space();
+            Toggle customBackup = _rootElement.Q<Toggle>("CustomFolder");
+            customBackup.value = _useCustomSaveLocation;
+            customBackup.RegisterValueChangedCallback(evt =>
+            {
+                _useCustomSaveLocation = evt.newValue;
+                ShowCustomBackupSelector(evt.newValue);
+            });
 
-            _autoBackuo = EditorGUILayout.ToggleLeft(_autoBackupContent, _autoBackuo);
-            GUI.enabled = _autoBackuo;
-            EditorGUI.indentLevel++;
-            int days = EditorGUILayout.IntSlider("Days", _backupTimeSpan.Days, 0, 7);
-            int hours = EditorGUILayout.IntSlider("Hours", _backupTimeSpan.Hours, 0, 23);
-            int minutes = EditorGUILayout.IntSlider("Minutes", _backupTimeSpan.Minutes, 0, 59);
+            ShowCustomBackupSelector(_useCustomSaveLocation);
 
-            if (days == 0 && hours == 0 && minutes < 5)
-                minutes = 5;
+            Button button = _rootElement.Q<Button>("Browse");
+            button.clicked += () =>
+            {
+                string path = EditorUtility.OpenFolderPanel("Browse for folder", Directory.GetCurrentDirectory(), "Backups");
+                if (path.Length > 0)
+                {
+                    _customSaveLocation = path;
+                    customLocation.text = path;
+                }
+            };
 
-            _backupTimeSpan = new TimeSpan(days, hours, minutes, 0);
+            UpdateNextBackup();
 
-            EditorGUI.indentLevel--;
-            GUI.enabled = true;
+            Label version = _rootElement.Q<Label>("Version");
+            version.text = $"{pluginVersion} - ({pluginDate:d})";
 
-            if (_lastBackup != DateTime.MinValue)
-                EditorGUILayout.LabelField("Last backup: " + _lastBackup);
-            else
-                EditorGUILayout.LabelField("Last backup: Never backed Up");
-            if (_backingUp)
-                EditorGUILayout.LabelField("Next backup: Backing Up now...");
-            else if (!_autoBackuo)
-                EditorGUILayout.LabelField("Next backup: Disabled");
-            else
-                EditorGUILayout.LabelField("Next backup: " + _lastBackup.Add(_backupTimeSpan));
-
-            EditorGUILayout.EndScrollView();
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Use Defaults", GUILayout.Width(120f)))
+            Button defaultButton = _rootElement.Q<Button>("UseDefaults");
+            defaultButton.clicked += () =>
             {
                 EditorPrefs.DeleteKey("SBS.ZipMode");
                 EditorPrefs.DeleteKey("SBS.AutoBackup");
@@ -213,16 +260,24 @@ namespace Studious
                 EditorPrefs.DeleteKey("SBS.CustomSave");
                 EditorPrefs.DeleteKey("SBS.TimeSpan");
                 EditorPrefs.DeleteKey("SBS.BackupOnExit");
-            }
-            GUI.enabled = !_backingUp;
-            if (GUILayout.Button("Backup now", GUILayout.Width(120f)))
-                StartBackup();
-            GUI.enabled = true;
-            EditorGUILayout.EndHorizontal();
+                EditorPrefs.DeleteKey("SBS.BackupFolders");
+
+                InitializeEditor();
+            };
+
+            Button backupNow = _rootElement.Q<Button>("BackupNow");
+            backupNow.clicked += () =>
+            {
+                DoBackup();
+            };
         }
 
-        [MenuItem("Tools/Studios Backup/Backup Now")]
-        public static void StartBackup()
+        private void UpdateAutoTime()
+        {
+        }
+
+        [MenuItem("Tools/Studios Backup/Backup Now 2")]
+        public static void DoBackup()
         {
             if (_backingUp && !EditorApplication.isPlaying)
                 return;
@@ -234,7 +289,7 @@ namespace Studious
             ZipProcess zip;
 
             //Only Supporting 7Zip for now.
-            zip = new SevenZip(path, assetsPath, projectSettingsPath);
+            zip = new SevenZip(path, _items.ToArray());
 
             zip.OnExit += (o, a) => {
                 _backingUp = false;
@@ -246,10 +301,12 @@ namespace Studious
                     string time = (EditorApplication.timeSinceStartup - startTime).ToString("0.00");
 
                     if (_logToConsole)
-                        Debug.LogFormat("Backuped project into {0} in {1} seconds", FormatFileSize( fileInfo.Length) , time);
+                        Debug.LogFormat("Backuped project into {0} in {1} seconds", FormatFileSize(fileInfo.Length), time);
                 }
                 else if (_logToConsole)
                     Debug.LogWarning("Something went wrong with the backup.");
+
+                InitializeEditor();
             };
 
             _backingUp = zip.Start();
@@ -258,6 +315,140 @@ namespace Studious
                 Debug.Log(_backingUp ? "Backing Up..." : "Error starting the Backup Process");
             if (!_backingUp)
                 _lastBackup = DateTime.Now;
+
+            InitializeEditor();
+        }
+
+        private static void ShowCustomBackupSelector(bool visible)
+        {
+            VisualElement backupLocation = _rootElement.Q<VisualElement>("BackupSelector");
+            backupLocation.visible = visible;
+
+            if (visible)
+                backupLocation.style.display = DisplayStyle.Flex;
+            else
+                backupLocation.style.display = DisplayStyle.None;
+        }
+
+        private static void PopulateDropdown()
+        {
+            var dropDown = _rootElement.Q<DropdownField>();
+            dropDown.choices = Enum.GetNames((typeof(ZipModes))).ToList();
+            dropDown.index = (int)_mode;
+            dropDown.RegisterValueChangedCallback(evt =>
+            {
+                _mode = dropDown.index + 1;
+            });
+        }
+
+        private static void PopulateListView()
+        {
+            Func<VisualElement> makeItem = () =>
+            {
+                VisualElement listContainer = new VisualElement();
+                listContainer.name = "ListContainer";
+                listContainer.AddToClassList("ListContainer");
+
+                Label listLabel = new Label("");
+                listLabel.name = "ListLabel";
+                listLabel.AddToClassList("ListLabel");
+                listContainer.Add(listLabel);
+
+                return listContainer;
+            };
+
+            Action<VisualElement, int> bindItem = (e, i) => BindItem(e, i);
+            VisualElement BindItem(VisualElement ve, int i)
+            {
+                ve.Q<Label>("ListLabel").text = _items[i];
+                return ve;
+            }
+
+            ListView listView = _rootElement.Q<ListView>();
+            _rootElement.AddToClassList("listview-item");
+            listView.makeItem = makeItem;
+            listView.bindItem = bindItem;
+            listView.itemsSource = _items;
+
+            listView.itemsAdded += ItemAdded;
+            listView.itemsRemoved += ItemsRemoved;
+
+            listView.selectionType = SelectionType.Single;
+        }
+
+        private static void ItemAdded(IEnumerable<int> item)
+        {
+            string path = EditorUtility.OpenFolderPanel("Browse for folder", Directory.GetCurrentDirectory(), "Backups");
+            if (path.Length > 0)
+            {
+                path = new DirectoryInfo(path).Name;
+                _items[item.ElementAt(0)] = path;
+                _backFolders = JsonConvert.SerializeObject(_items);
+            }
+            else
+            {
+                _items.RemoveAt(item.ElementAt(0));
+            }
+
+            InitializeEditor();
+        }
+
+        private static void ItemsRemoved(IEnumerable<int> item)
+        {
+            _backFolders = JsonConvert.SerializeObject(_items);
+        }
+
+        private static void HandleAutoBackup(ChangeEvent<bool> evt)
+        {
+            _autoBackup = evt.newValue;
+
+            DisplayBackupTime(evt.newValue);
+            UpdateNextBackup();
+        }
+
+        private static void UpdateNextBackup()
+        {
+            Label nextBackup = _rootElement.Q<Label>("NextBackup");
+            if (_backingUp)
+                nextBackup.text = "Backing Up now...";
+            else if (!_autoBackup)
+                nextBackup.text = "Disabled";
+            else
+                nextBackup.text = _lastBackup.Add(_backupTimeSpan).ToString();
+
+            Label lastBackup = _rootElement.Q<Label>("LastBackup");
+
+            if (_lastBackup != DateTime.MinValue)
+                lastBackup.text = _lastBackup.ToString();
+            else
+                lastBackup.text = "Never backed Up";
+        }
+
+        private static void DisplayBackupTime(bool newValue)
+        {
+            SliderInt daySlider = _rootElement.Q<SliderInt>("DaySlider");
+            SliderInt hourSlider = _rootElement.Q<SliderInt>("HourSlider");
+            SliderInt minSlider = _rootElement.Q<SliderInt>("MinSlider");
+
+            daySlider.SetEnabled(newValue);
+            hourSlider.SetEnabled(newValue);
+            minSlider.SetEnabled(newValue);
+        }
+
+        private static void Quit()
+        {
+            if (_backupOnExit)
+                DoBackup();
+
+            WaitForBackup();
+        }
+
+        private static async void WaitForBackup()
+        {
+            while (_backingUp)
+            {
+                await Task.Yield();
+            }
         }
 
         private static bool CanBackup()
@@ -265,23 +456,7 @@ namespace Studious
             return !_backingUp && (/*FastZip.isSupported ||*/ SevenZip.IsSupported) && !EditorApplication.isPlaying;
         }
 
-        private static void Quit()
-        {
-            if(_backupOnExit)
-                StartBackup();
-
-            WaitForBackup();
-        }
-
-        private static async void WaitForBackup()
-        {
-            while(_backingUp)
-            {
-                await Task.Yield();
-            }
-        }
-
-        public static string FormatFileSize(long bytes)
+        private static string FormatFileSize(long bytes)
         {
             var unit = 1024;
             if (bytes < unit) { return $"{bytes} B"; }
@@ -289,6 +464,22 @@ namespace Studious
             var exp = (int)(Math.Log(bytes) / Math.Log(unit));
             return $"{bytes / Math.Pow(unit, exp):F2} {("KMGTPE")[exp - 1]}B";
         }
+
+        [SettingsProvider]
+        public static SettingsProvider CreateMyCustomSettingsProvider()
+        {
+            var provider = new CronusBackupProvider(_settingsPath, SettingsScope.User);
+
+            //provider.keywords = GetSearchKeywordsFromGUIContentProperties<Styles>();
+            return provider;
+        }
     }
 
+
+}
+
+public enum ZipModes
+{
+    SevenZip = 1,
+    FastZip = 2
 }

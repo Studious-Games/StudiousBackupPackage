@@ -1,7 +1,7 @@
 {
-  "name": "com.studious.studiousbackuppackage",
+  "name": "com.studiousgames.studiousbackuppackage",
   "displayName": "Studious Backup Package",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "unity": "2020.3",
   "unityRelease": "0f1",
   "keywords": [
@@ -14,5 +14,8 @@
   "author": {
     "name": "Studious Games"
   },
-  "type": "library"
+  "type": "library",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "2.0.0"
+  }
 }
