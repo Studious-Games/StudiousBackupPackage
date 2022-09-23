@@ -272,7 +272,7 @@ namespace Studious
             };
         }
 
-        [MenuItem("Tools/Studios Backup/Backup Now 2")]
+        [MenuItem("Tools/Studios Backup/Backup Now")]
         public static void DoBackup()
         {
             if (_backingUp && !EditorApplication.isPlaying && _items.Count == 0)
