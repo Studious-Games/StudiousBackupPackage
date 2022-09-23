@@ -272,21 +272,27 @@ namespace Studious
             };
         }
 
-        private void UpdateAutoTime()
-        {
-        }
-
         [MenuItem("Tools/Studios Backup/Backup Now 2")]
         public static void DoBackup()
         {
             if (_backingUp && !EditorApplication.isPlaying)
                 return;
 
-            string path = string.Format("{0}/{1}_backup_{2}.zip", _saveLocation, _productNameForFile, DateTime.Now.ToString("yyyy-MM-dd-HH-mm"));
-            string assetsPath = Application.dataPath;
-            string projectSettingsPath = Application.dataPath.Replace("/Assets", "/ProjectSettings");
+            string path = _saveLocation;
+
             double startTime = EditorApplication.timeSinceStartup;
             ZipProcess zip;
+
+            if(_useCustomSaveLocation)
+            {
+                path = $"{path}\\{_productNameForFile}";
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+            }
+
+            path = string.Format("{0}/{1}_backup_{2}.zip", path, _productNameForFile, DateTime.Now.ToString("yyyy-MM-dd-HH-mm"));
 
             //Only Supporting 7Zip for now.
             zip = new SevenZip(path, _items.ToArray());
@@ -301,7 +307,7 @@ namespace Studious
                     string time = (EditorApplication.timeSinceStartup - startTime).ToString("0.00");
 
                     if (_logToConsole)
-                        Debug.LogFormat("Backuped project into {0} in {1} seconds", FormatFileSize(fileInfo.Length), time);
+                        Debug.LogFormat("Project backed up into {0} in {1} seconds", FormatFileSize(fileInfo.Length), time);
                 }
                 else if (_logToConsole)
                     Debug.LogWarning("Something went wrong with the backup.");
@@ -474,8 +480,6 @@ namespace Studious
             return provider;
         }
     }
-
-
 }
 
 public enum ZipModes

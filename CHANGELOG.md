@@ -1,7 +1,7 @@
 # Changelog
 ## [1.0.2] - 2022-09-23
 
-Added the ability to add and remove folders to the backup, as well as switching to the new UI Toolkit.
+Added the ability to add and remove folders to the backup, as well as switching to the new UI Toolkit. When backing up to a selected location, the system will now create a folder based on the project names name to hold all the zip backups.
 
 ## [1.0.1] - 2022-09-09
 
