@@ -481,5 +481,5 @@ namespace Studious
 public enum ZipModes
 {
     SevenZip = 1,
-    FastZip = 2
+    //FastZip = 2
 }
