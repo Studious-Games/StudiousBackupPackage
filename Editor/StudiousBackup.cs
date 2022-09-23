@@ -275,7 +275,7 @@ namespace Studious
         [MenuItem("Tools/Studios Backup/Backup Now 2")]
         public static void DoBackup()
         {
-            if (_backingUp && !EditorApplication.isPlaying)
+            if (_backingUp && !EditorApplication.isPlaying && _items.Count == 0)
                 return;
 
             string path = _saveLocation;
@@ -350,8 +350,6 @@ namespace Studious
         private static void PopulateListView()
         {
             HelpBox help = _rootElement.Q<HelpBox>("FolderWarning");
-
-            Debug.Log(_items.Count);
 
             if(_items.Count > 0)
                 help.style.display = DisplayStyle.None;
