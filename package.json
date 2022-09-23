@@ -1,7 +1,7 @@
 {
   "name": "com.studiousgames.studiousbackuppackage",
   "displayName": "Studious Backup Package",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "unity": "2020.3",
   "unityRelease": "0f1",
   "keywords": [
@@ -17,5 +17,6 @@
   "type": "library",
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "2.0.0"
-  }
+  },
+  "description": "Provides the means to backup projects to a designated location, or in the projects root path."
 }

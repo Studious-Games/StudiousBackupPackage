@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
     <Style src="project://database/Packages/com.studiousgames.studiousbackuppackage/Editor/Resources/StyleSheets/TestStyles.uss?fileID=7433441132597879392&amp;guid=a9b5e4bcb48bb7847b8f28d71d9c6805&amp;type=3#TestStyles" />
     <ui:VisualElement>
         <ui:VisualElement name="Header">
@@ -20,9 +20,10 @@
                         <ui:Label text="location" display-tooltip-when-elided="true" name="CustomLocation" style="-unity-text-align: middle-left; width: 163px;" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement style="margin-top: 20px; margin-left: 5px;">
+                <ui:VisualElement style="margin-top: 20px; margin-left: 5px; width: 850px;">
                     <ui:Label text="Folders for backup" display-tooltip-when-elided="true" style="margin-left: 15px; font-size: 15px; -unity-font-style: bold;" />
                     <ui:Label text="The following folders will be included in the backup process" display-tooltip-when-elided="true" style="margin-left: 15px; font-size: 12px; -unity-font-style: normal; margin-top: 10px; margin-bottom: 5px; padding-top: 0; padding-bottom: 0;" />
+                    <ui:HelpBox text="Warning : There must be at least one folder for the backup process." message-type="Info" display-tooltip-when-elided="true" name="FolderWarning" style="margin-left: 15px; font-size: 14px; margin-top: 10px; margin-bottom: 5px; padding-top: 0; padding-bottom: 0; width: 788px;" />
                     <ui:ListView focusable="false" show-border="true" show-foldout-header="false" header-title="Folders to Include" show-add-remove-footer="true" reorderable="false" binding-path="FolderItems" show-bound-collection-size="false" virtualization-method="DynamicHeight" name="FolerList" show-alternating-row-backgrounds="None" class="FolderList" style="margin-top: 5px;" />
                 </ui:VisualElement>
             </ui:GroupBox>

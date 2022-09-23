@@ -349,6 +349,16 @@ namespace Studious
 
         private static void PopulateListView()
         {
+            HelpBox help = _rootElement.Q<HelpBox>("FolderWarning");
+
+            Debug.Log(_items.Count);
+
+            if(_items.Count > 0)
+                help.style.display = DisplayStyle.None;
+            else
+                help.style.display = DisplayStyle.Flex;
+
+
             Func<VisualElement> makeItem = () =>
             {
                 VisualElement listContainer = new VisualElement();
@@ -402,6 +412,7 @@ namespace Studious
         private static void ItemsRemoved(IEnumerable<int> item)
         {
             _backFolders = JsonConvert.SerializeObject(_items);
+            InitializeEditor();
         }
 
         private static void HandleAutoBackup(ChangeEvent<bool> evt)
