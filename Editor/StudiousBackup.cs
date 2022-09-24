@@ -472,7 +472,8 @@ namespace Studious
             if (_backupOnExit)
                 DoBackup();
 
-            WaitForBackup();
+            if(_backingUp)
+                WaitForBackup();
         }
 
         private static async void WaitForBackup()
