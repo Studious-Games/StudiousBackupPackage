@@ -2,7 +2,11 @@
 
 ## [1.0.3] -
 
-Added a warning when all folders where removed from the folder list, so the user knows that at least one folder needs to be present.
+Added a warning when all folders where removed from the folder list, so the user knows that at least one folder needs to be present. 
+
+Added a popup window to let the user know if a backup is in progress while trying to exit Unity.
+
+Removed 7Zip and replaced it with IO.Compression in C#.
 
 
 ## [1.0.2] - 2022-09-23
