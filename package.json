@@ -16,7 +16,8 @@
   },
   "type": "library",
   "dependencies": {
-    "com.unity.nuget.newtonsoft-json": "2.0.0"
+    "com.unity.nuget.newtonsoft-json": "2.0.0",
+    "com.unity.sharp-zip-lib" : "1.3.2-preview"
   },
   "description": "Provides the means to backup projects to a designated location, or in the projects root path."
 }

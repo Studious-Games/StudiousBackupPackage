@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 using Newtonsoft.Json;
 using UnityEngine;
 using System.Threading.Tasks;
-using Studious;
+using System.IO.Compression;
 
 namespace Studious
 {
@@ -262,67 +262,82 @@ namespace Studious
                 EditorPrefs.DeleteKey("SBS.BackupOnExit");
                 EditorPrefs.DeleteKey("SBS.BackupFolders");
 
-                InitializeEditor();
+                defaultButton.Blur();
             };
 
             Button backupNow = _rootElement.Q<Button>("BackupNow");
             backupNow.clicked += () =>
             {
+                backupNow.Blur();
                 DoBackup();
             };
         }
 
         [MenuItem("Tools/Studios Backup/Backup Now")]
-        public static void DoBackup()
+        public static async void DoBackup()
         {
-            if (_backingUp && !EditorApplication.isPlaying && _items.Count == 0)
+            if (!CanBackup())
                 return;
 
-            string path = _saveLocation;
-
-            double startTime = EditorApplication.timeSinceStartup;
-            ZipProcess zip;
-
-            if(_useCustomSaveLocation)
+            if(DateTime.Now.Subtract(_lastBackup).Minutes < 2)
             {
-                path = $"{path}\\{_productNameForFile}";
-                if (!Directory.Exists(path))
+                Logger.Log("Cancelling current backup request as too soon to run another backup.");
+                return;
+            }
+
+            _backingUp = true;
+            UpdateNextBackup();
+            double startTime = EditorApplication.timeSinceStartup;
+            string zipPath = _saveLocation;
+
+            Logger.Log("Backing Up...");
+
+            if (_useCustomSaveLocation)
+            {
+                zipPath = $"{zipPath}\\{_productNameForFile}";
+                if (!Directory.Exists(zipPath))
                 {
-                    Directory.CreateDirectory(path);
+                    Directory.CreateDirectory(zipPath);
                 }
             }
 
-            path = string.Format("{0}/{1}_backup_{2}.zip", path, _productNameForFile, DateTime.Now.ToString("yyyy-MM-dd-HH-mm"));
+            zipPath = string.Format("{0}/{1}_backup_{2}.zip", zipPath, _productNameForFile, DateTime.Now.ToString("yyyy-MM-dd-HH-mm"));
 
-            //Only Supporting 7Zip for now.
-            zip = new SevenZip(path, _items.ToArray());
-
-            zip.OnExit += (o, a) => {
-                _backingUp = false;
-                _lastBackup = DateTime.Now;
-
-                if (zip.Process.ExitCode == 0)
+            try
+            {
+                using (ZipArchive archive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
                 {
-                    FileInfo fileInfo = new FileInfo(path);
-                    string time = (EditorApplication.timeSinceStartup - startTime).ToString("0.00");
-
-                    if (_logToConsole)
-                        Debug.LogFormat("Project backed up into {0} in {1} seconds", FormatFileSize(fileInfo.Length), time);
+                    foreach (string item in _items)
+                    {
+                        CompressFolder(item, archive);
+                    }
                 }
-                else if (_logToConsole)
-                    Debug.LogWarning("Something went wrong with the backup.");
 
-                InitializeEditor();
-            };
+                FileInfo fileInfo = new FileInfo(zipPath);
+                string time = (EditorApplication.timeSinceStartup - startTime).ToString("0.00");
 
-            _backingUp = zip.Start();
+                Logger.LogFormat("Project backed up into {0} in {1} seconds", FormatFileSize(fileInfo.Length), time);
 
-            if (_logToConsole)
-                Debug.Log(_backingUp ? "Backing Up..." : "Error starting the Backup Process");
-            if (!_backingUp)
                 _lastBackup = DateTime.Now;
 
-            InitializeEditor();
+            } catch (Exception e) {
+                Logger.LogWarning("Something went wrong with the backup.");
+            }
+
+            _backingUp = false;
+            UpdateNextBackup();
+        }
+
+        private static void CompressFolder(string path, ZipArchive zipStream)
+        {
+            DirectoryInfo dir = new DirectoryInfo(path);
+
+            foreach (FileInfo file in dir.AllFilesAndFolders().Where(o => o is FileInfo).Cast<FileInfo>())
+            {
+                string relPath = file.FullName.Substring(dir.Parent.FullName.Length + 1);
+                zipStream.CreateEntryFromFile(file.FullName, relPath);
+            }
+
         }
 
         private static void ShowCustomBackupSelector(bool visible)
@@ -347,6 +362,8 @@ namespace Studious
             });
         }
 
+        static ListView listView;
+        
         private static void PopulateListView()
         {
             HelpBox help = _rootElement.Q<HelpBox>("FolderWarning");
@@ -378,7 +395,7 @@ namespace Studious
                 return ve;
             }
 
-            ListView listView = _rootElement.Q<ListView>();
+            listView = _rootElement.Q<ListView>();
             _rootElement.AddToClassList("listview-item");
             listView.makeItem = makeItem;
             listView.bindItem = bindItem;
@@ -460,15 +477,20 @@ namespace Studious
 
         private static async void WaitForBackup()
         {
+            PopupWindow pu = new PopupWindow();
+            pu.Show();
+
             while (_backingUp)
             {
                 await Task.Yield();
             }
+
+            pu.Close();
         }
 
         private static bool CanBackup()
         {
-            return !_backingUp && (/*FastZip.isSupported ||*/ SevenZip.IsSupported) && !EditorApplication.isPlaying;
+            return !_backingUp && !EditorApplication.isPlaying && _items.Count != 0;
         }
 
         private static string FormatFileSize(long bytes)

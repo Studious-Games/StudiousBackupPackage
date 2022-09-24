@@ -1,0 +1,15 @@
+.Title {
+    font-size: 22px;
+    -unity-text-align: upper-center;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.TextWarning {
+    font-size: 16px;
+    flex-wrap: wrap;
+    width: 450px;
+    -unity-text-align: middle-left;
+    white-space: normal;
+    margin-top: 10px;
+}
