@@ -273,7 +273,7 @@ namespace Studious
         }
 
         [MenuItem("Tools/Studios Backup/Backup Now")]
-        public static async void DoBackup()
+        public static void DoBackup()
         {
             if (!CanBackup())
                 return;
@@ -293,7 +293,7 @@ namespace Studious
 
             if (_useCustomSaveLocation)
             {
-                zipPath = $"{zipPath}\\{_productNameForFile}";
+                zipPath = $"{zipPath}/{_productNameForFile}";
                 if (!Directory.Exists(zipPath))
                 {
                     Directory.CreateDirectory(zipPath);
@@ -336,7 +336,6 @@ namespace Studious
                 string relPath = file.FullName.Substring(dir.Parent.FullName.Length + 1);
                 zipStream.CreateEntryFromFile(file.FullName, relPath);
             }
-
         }
 
         private static void ShowCustomBackupSelector(bool visible)
