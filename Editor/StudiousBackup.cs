@@ -153,7 +153,6 @@ namespace Studious
 
             _rootElement.Add(temple);
 
-            PopulateDropdown();
             PopulateListView();
             DisplayBackupTime(false);
 
@@ -349,17 +348,6 @@ namespace Studious
                 backupLocation.style.display = DisplayStyle.Flex;
             else
                 backupLocation.style.display = DisplayStyle.None;
-        }
-
-        private static void PopulateDropdown()
-        {
-            var dropDown = _rootElement.Q<DropdownField>();
-            dropDown.choices = Enum.GetNames((typeof(ZipModes))).ToList();
-            dropDown.index = (int)_mode;
-            dropDown.RegisterValueChangedCallback(evt =>
-            {
-                _mode = dropDown.index + 1;
-            });
         }
 
         static ListView listView;
