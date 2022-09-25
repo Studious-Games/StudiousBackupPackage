@@ -32,11 +32,11 @@ namespace Studious
             rootVisualElement.Add(labelFromUXML);
 
             Label warning = rootVisualElement.Q<Label>("TextWarning");
-            warning.text = "<color=red>Warning:</color> A backup is currently running in the background, and " +
-                "Unity will close as soon as it has finished." +
+            warning.text = "<color=red>Warning:</color> When the option for Backing up on Exit " +
+                "is selected, depending on the size of the project, Unity may appear to have hung." +
                 "\n\n" +
-                "By clsoing this Popup window you acknowldge that Unity is still running a backup of your project " +
-                "in the backgroud.";
+                "Please let Unity finish what it is doing, Unity will close once the backup has " +
+                "completed.";
         }
 
     }

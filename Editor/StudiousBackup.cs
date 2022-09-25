@@ -8,6 +8,8 @@ using Newtonsoft.Json;
 using UnityEngine;
 using System.Threading.Tasks;
 using System.IO.Compression;
+using System.ComponentModel;
+using System.Threading;
 
 namespace Studious
 {
@@ -22,6 +24,7 @@ namespace Studious
         private static List<string> _defaultFolders = new List<string> { "Assets", "Packages", "ProjectSettings", "UserSettings" };
         private static List<string> _items = new List<string>();
         private static bool _backingUp = false;
+        private static Task backupTask;
 
         public const string _settingsPath = "Preferences/Studious Games/Studious Backup";
 
@@ -115,7 +118,7 @@ namespace Studious
                 {
                     try
                     {
-                        DoBackup();
+                        StartBackup();
                     }
                     catch (Exception e)
                     {
@@ -171,6 +174,12 @@ namespace Studious
             backupExit.RegisterValueChangedCallback(evt =>
             {
                 _backupOnExit = evt.newValue;
+
+                if (evt.newValue == true)
+                {
+                    PopupWindow pu = new PopupWindow();
+                    pu.ShowModal();
+                }
             });
 
             Toggle backautoBackup = _rootElement.Q<Toggle>("AutoBackup");
@@ -268,21 +277,15 @@ namespace Studious
             backupNow.clicked += () =>
             {
                 backupNow.Blur();
-                DoBackup();
+                StartBackup();
             };
         }
 
         [MenuItem("Tools/Studios Backup/Backup Now")]
-        public static void DoBackup()
+        public static async void StartBackup()
         {
             if (!CanBackup())
                 return;
-
-            if(DateTime.Now.Subtract(_lastBackup).Minutes < 2)
-            {
-                Logger.Log("Cancelling current backup request as too soon to run another backup.");
-                return;
-            }
 
             _backingUp = true;
             UpdateNextBackup();
@@ -300,31 +303,40 @@ namespace Studious
                 }
             }
 
-            zipPath = string.Format("{0}/{1}_backup_{2}.zip", zipPath, _productNameForFile, DateTime.Now.ToString("yyyy-MM-dd-HH-mm"));
+            zipPath = string.Format("{0}/{1}_backup_{2}.zip", zipPath, _productNameForFile, DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
 
-            try
-            {
-                using (ZipArchive archive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
-                {
-                    foreach (string item in _items)
-                    {
-                        CompressFolder(item, archive);
-                    }
-                }
+            backupTask = DoBackup(zipPath);
+            await Task.WhenAll(backupTask);
 
-                FileInfo fileInfo = new FileInfo(zipPath);
-                string time = (EditorApplication.timeSinceStartup - startTime).ToString("0.00");
+            FileInfo fileInfo = new FileInfo(zipPath);
+            string time = (EditorApplication.timeSinceStartup - startTime).ToString("0.00");
+            Logger.LogFormat("Project backed up into {0} in {1} seconds", FormatFileSize(fileInfo.Length), time);
 
-                Logger.LogFormat("Project backed up into {0} in {1} seconds", FormatFileSize(fileInfo.Length), time);
-
-                _lastBackup = DateTime.Now;
-
-            } catch (Exception e) {
-                Logger.LogWarning("Something went wrong with the backup.");
-            }
-
+            _lastBackup = DateTime.Now;
             _backingUp = false;
             UpdateNextBackup();
+        }
+
+        private static Task<bool> DoBackup(string zipPath)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    using (ZipArchive archive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+                    {
+                        foreach (string item in _items)
+                        {
+                            CompressFolder(item, archive);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    return false;
+                }
+                return true;
+            });
         }
 
         private static void CompressFolder(string path, ZipArchive zipStream)
@@ -350,12 +362,12 @@ namespace Studious
         }
 
         static ListView listView;
-        
+
         private static void PopulateListView()
         {
             HelpBox help = _rootElement.Q<HelpBox>("FolderWarning");
 
-            if(_items.Count > 0)
+            if (_items.Count > 0)
                 help.style.display = DisplayStyle.None;
             else
                 help.style.display = DisplayStyle.Flex;
@@ -457,23 +469,10 @@ namespace Studious
         private static void Quit()
         {
             if (_backupOnExit)
-                DoBackup();
+               StartBackup();
 
-            if(_backingUp)
-                WaitForBackup();
-        }
-
-        private static async void WaitForBackup()
-        {
-            PopupWindow pu = new PopupWindow();
-            pu.Show();
-
-            while (_backingUp)
-            {
-                await Task.Yield();
-            }
-
-            pu.Close();
+            if (_backingUp)
+                backupTask.Wait();
         }
 
         private static bool CanBackup()
