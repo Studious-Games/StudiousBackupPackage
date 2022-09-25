@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 using System.IO.Compression;
 using System.ComponentModel;
 using System.Threading;
+using Newtonsoft.Json.Linq;
+using UnityEditor.UIElements;
+using UnityEditor.Search;
 
 namespace Studious
 {
@@ -24,7 +27,7 @@ namespace Studious
         private static List<string> _defaultFolders = new List<string> { "Assets", "Packages", "ProjectSettings", "UserSettings" };
         private static List<string> _items = new List<string>();
         private static bool _backingUp = false;
-        private static Task backupTask;
+        private static Task<ZipResult> backupTask;
 
         public const string _settingsPath = "Preferences/Studious Games/Studious Backup";
 
@@ -111,8 +114,13 @@ namespace Studious
             get { return EditorPrefs.GetBool("SBS.ShowPopup", false); }
             set { EditorPrefs.SetBool("SBS.ShowPopup", value); }
         }
-        #endregion
 
+        private static int _backupNumber
+        {
+            get { return EditorPrefs.GetInt("SBS.BackupNumber", 10); }
+            set { EditorPrefs.SetInt("SBS.BackupNumber", value); }
+        }
+        #endregion
 
         static CronusBackupProvider()
         {
@@ -199,6 +207,19 @@ namespace Studious
 
             Label customLocation = _rootElement.Q<Label>("CustomLocation");
             customLocation.text = _customSaveLocation;
+
+            IntegerField numberBackups = _rootElement.Q<IntegerField>("BackupNumber");
+            numberBackups.value = _backupNumber;
+            numberBackups.RegisterValueChangedCallback(evt =>
+            {
+                _backupNumber = evt.newValue;
+                if (_backupNumber < 0)
+                {
+                    _backupNumber = 0;
+                    numberBackups.value = 0;
+                }
+
+            });
 
 
             SliderInt daySlider = _rootElement.Q<SliderInt>("DaySlider");
@@ -316,34 +337,65 @@ namespace Studious
             backupTask = DoBackup(zipPath);
             await Task.WhenAll(backupTask);
 
-            FileInfo fileInfo = new FileInfo(zipPath);
-            string time = (EditorApplication.timeSinceStartup - startTime).ToString("0.00");
-            Logger.LogFormat("Project backed up into {0} in {1} seconds", FormatFileSize(fileInfo.Length), time);
+            if(backupTask.Result.Success)
+            {
+                FileInfo fileInfo = new FileInfo(zipPath);
+                string time = (EditorApplication.timeSinceStartup - startTime).ToString("0.00");
+                Logger.LogFormat("Project backed up into {0} in {1} seconds", FormatFileSize(fileInfo.Length), time);
 
-            _lastBackup = DateTime.Now;
+                _lastBackup = DateTime.Now;
+                RemovePreviousBackups(Path.Combine(_saveLocation, _productNameForFile));
+            }
+            else
+            {
+                Logger.LogWarning(backupTask.Result.Message);
+            }
+
             _backingUp = false;
             UpdateNextBackup();
         }
 
-        private static Task<bool> DoBackup(string zipPath)
+        private static void RemovePreviousBackups(string path)
         {
+            DirectoryInfo directory = new DirectoryInfo(path);
+            FileInfo[] backups = directory.GetFiles();
+
+            foreach (var file in backups.OrderByDescending(file => file.CreationTime).Skip(_backupNumber))
+            {
+                file.Delete();
+            }
+        }
+
+        private static Task<ZipResult> DoBackup(string zipPath)
+        {
+            bool isSuccess;
+            string message = string.Empty;
+
             return Task.Run(() =>
             {
+                ZipArchive archive;
                 try
                 {
-                    using (ZipArchive archive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+                    using (archive = ZipFile.Open(zipPath, ZipArchiveMode.Create))
                     {
                         foreach (string item in _items)
                         {
                             CompressFolder(item, archive);
                         }
                     }
+                    isSuccess = true;
                 }
                 catch (Exception e)
                 {
-                    return false;
+                    isSuccess = false;
+                    message = e.Message;
                 }
-                return true;
+
+                return new ZipResult
+                {
+                    Success = isSuccess,
+                    Message = message
+                };
             });
         }
 

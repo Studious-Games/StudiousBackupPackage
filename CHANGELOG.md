@@ -8,6 +8,7 @@ Added a popup window to let the user know if a backup is in progress while tryin
 
 Removed 7Zip and replaced it with IO.Compression in C#, which allows for the package to work on Mac's now.
 
+Added the ability keep a defined number of backups, anything older than this number will be removed from the backups.
 
 ## [1.0.2] - 2022-09-23
 

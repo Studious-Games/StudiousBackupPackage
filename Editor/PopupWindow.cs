@@ -31,7 +31,9 @@ namespace Studious
                 "is selected, depending on the size of the project, Unity may appear to have hung." +
                 "\n\n" +
                 "Please let Unity finish what it is doing, Unity will close once the backup has " +
-                "completed.";
+                "completed." +
+                "\n\n" +
+                "Interrupting this process will lead to a corrupt backup.";
         }
 
     }

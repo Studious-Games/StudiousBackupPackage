@@ -7,9 +7,12 @@
         <ui:VisualElement name="Content" class="MainContent">
             <ui:GroupBox class="Groupbox">
                 <ui:DropdownField label="Zip Mode" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="ZipMode" binding-path="ZipMode" class="ZipDropdown" style="display: none;" />
-                <ui:Toggle label="Log to Console" name="ConsoleLog" class="StudiousToggle Toggle" />
-                <ui:Toggle label="Backup on Exit" name="BackupExit" style="margin-left: 3px; margin-right: 3px; margin-top: 6px; margin-bottom: 6px;" />
-                <ui:Toggle label="Custom Backup Folder" name="CustomFolder" class="StudiousToggle" style="margin-left: 3px; margin-right: 3px; margin-top: 6px; margin-bottom: 6px;" />
+                <ui:Toggle label="Log to Console" name="ConsoleLog" class="StudiousToggle Toggle" style="width: 170px;" />
+                <ui:Toggle label="Backup on Exit" name="BackupExit" style="margin-left: 3px; margin-right: 3px; margin-top: 6px; margin-bottom: 6px; width: 170px;" />
+                <ui:VisualElement style="margin-top: 5px; margin-bottom: 5px;">
+                    <uie:IntegerField label="Number Backups to keep" value="0" name="BackupNumber" style="width: 199px;" />
+                </ui:VisualElement>
+                <ui:Toggle label="Custom Backup Folder" name="CustomFolder" class="StudiousToggle" style="margin-left: 3px; margin-right: 3px; margin-top: 6px; margin-bottom: 6px; width: 168px;" />
                 <ui:VisualElement name="BackupSelector" style="flex-direction: column; margin-top: 3px; margin-bottom: 3px; margin-left: 3px; flex-grow: 1; display: flex;">
                     <ui:VisualElement style="flex-direction: row;">
                         <ui:Label text="Backup folder location" display-tooltip-when-elided="true" style="-unity-text-align: middle-left; width: 163px;" />
