@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.3] -
+## [1.0.3] - 2022-09-26
 
 Added a warning when all folders where removed from the folder list, so the user knows that at least one folder needs to be present. 
 
