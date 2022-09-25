@@ -105,6 +105,12 @@ namespace Studious
                 return name;
             }
         }
+
+        private static bool _popupShown
+        {
+            get { return EditorPrefs.GetBool("SBS.ShowPopup", false); }
+            set { EditorPrefs.SetBool("SBS.ShowPopup", value); }
+        }
         #endregion
 
 
@@ -175,11 +181,14 @@ namespace Studious
             {
                 _backupOnExit = evt.newValue;
 
-                if (evt.newValue == true)
+                if (evt.newValue == true && !_popupShown)
                 {
                     PopupWindow pu = new PopupWindow();
                     pu.ShowModal();
+                    _popupShown = true;
                 }
+                if(!evt.newValue)
+                    _popupShown = false;
             });
 
             Toggle backautoBackup = _rootElement.Q<Toggle>("AutoBackup");
