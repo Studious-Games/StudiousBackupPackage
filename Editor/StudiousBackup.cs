@@ -308,6 +308,13 @@ namespace Studious
                 backupNow.Blur();
                 StartBackup();
             };
+
+            Button report = _rootElement.Q<Button>("ReportIssue");
+            report.clicked += () =>
+            {
+                Application.OpenURL("https://github.com/Studious-Games/StudiousBackupPackage/issues");
+            };
+
         }
 
         [MenuItem("Tools/Studios Backup/Backup Now")]

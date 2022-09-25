@@ -57,6 +57,7 @@
             <ui:VisualElement name="FooterButtons" style="flex-direction: row;">
                 <ui:Button text="Use Defaults" display-tooltip-when-elided="true" name="UseDefaults" class="Button" />
                 <ui:Button text="Backup Now" display-tooltip-when-elided="true" name="BackupNow" class="Button" />
+                <ui:Button text="Report Issue" display-tooltip-when-elided="true" name="ReportIssue" class="Button" />
             </ui:VisualElement>
             <ui:VisualElement name="FooterVersion" style="flex-direction: row; position: absolute; right: 0; color: rgb(86, 224, 48); top: 0; bottom: 0;">
                 <ui:Label text="Version :" display-tooltip-when-elided="true" class="VersionText" />
