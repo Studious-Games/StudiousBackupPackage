@@ -39,10 +39,6 @@ Usage is very simple, as explained above you can run a backup from the menus alo
 
 ## **Settings**
 
-###### Zip mode
-
-At this present time, we only support the 7Zip library that comes with Unity. In the future, we have plans to support more options of Libraries to use, including FastZip.
-
 ###### Log To Console
 
 Fairly straight forward option, that logs what is happening to the console.
@@ -53,6 +49,10 @@ This option allows the package to automatically create a Back UP when you exit t
 
 We are working on a way to let the user know that something is happening.
 
+###### Number of Backups to keep
+
+This option will allow the package to keep that specific number of backups, therefore not filling up the hard drive with backups.
+
 ###### Custom backups folder
 
 By default the package will create a backup folder inside the root of your project, this might be ideal for most users. This option allows for users to select the place where Back Ups will be stored, across all projects.
@@ -60,3 +60,13 @@ By default the package will create a backup folder inside the root of your proje
 ###### Auto Backup
 
 This section allows for the package to auto Back Up while you are working, and as it runs in the background, it will not interfere with your work flow. If logging is enabled to the console, the package will display when it has started and finished in the console.
+
+###### Folders for Backup
+
+Allows you to add or remove folders from the backup, the default folders are the recommended folders, which you can remove or add to. 
+
+## Important
+
+When the package is in the middle of a backup, or you have Backup on Exit selected. Unity might appear to have hung, please do not kill Unity and just allow it to finish doing what it is doing. The bigger the project, the longer Unity the backup will take in the background.
+
+Killing Unity will create a corrupt backup.
