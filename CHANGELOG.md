@@ -6,7 +6,7 @@ Added a warning when all folders where removed from the folder list, so the user
 
 Added a popup window to let the user know if a backup is in progress while trying to exit Unity.
 
-Removed 7Zip and replaced it with IO.Compression in C#.
+Removed 7Zip and replaced it with IO.Compression in C#, which allows for the package to work on Mac's now.
 
 
 ## [1.0.2] - 2022-09-23
