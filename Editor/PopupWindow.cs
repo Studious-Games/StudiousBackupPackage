@@ -17,7 +17,6 @@ namespace Studious
             Init();
         }
 
-        [MenuItem("Window/My Window")]
         static void Init()
         {
             window = (PopupWindow)EditorWindow.GetWindow(typeof(PopupWindow));
@@ -33,8 +32,11 @@ namespace Studious
             rootVisualElement.Add(labelFromUXML);
 
             Label warning = rootVisualElement.Q<Label>("TextWarning");
-            warning.text = "Warning: A backup is currently running in the background, and " +
-                "Unity will close as soon as it has finished.";
+            warning.text = "<color=red>Warning:</color> A backup is currently running in the background, and " +
+                "Unity will close as soon as it has finished." +
+                "\n\n" +
+                "By clsoing this Popup window you acknowldge that Unity is still running a backup of your project " +
+                "in the backgroud.";
         }
 
     }

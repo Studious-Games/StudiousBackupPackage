@@ -1,8 +1,9 @@
 .Title {
     font-size: 22px;
     -unity-text-align: upper-center;
-    margin-top: 5px;
+    margin-top: 10px;
     margin-bottom: 5px;
+    color: rgba(93, 255, 255, 255);
 }
 
 .TextWarning {
@@ -12,4 +13,6 @@
     -unity-text-align: middle-left;
     white-space: normal;
     margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
 }
