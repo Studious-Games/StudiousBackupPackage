@@ -67,6 +67,6 @@ Allows you to add or remove folders from the backup, the default folders are the
 
 ## Important
 
-When the package is in the middle of a backup, or you have Backup on Exit selected. Unity might appear to have hung, please do not kill Unity and just allow it to finish doing what it is doing. The bigger the project, the longer Unity the backup will take in the background.
+When the package is in the middle of a backup, or you have Backup on Exit selected. Unity might appear to have hung, please do not kill Unity and just allow it to finish doing what it is doing. The bigger the project, the longer the backup will take in the background.
 
 Killing Unity will create a corrupt backup.
