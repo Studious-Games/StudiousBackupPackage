@@ -12,14 +12,9 @@ namespace Studious
         private const string _packagePath = "Packages/com.studiousgames.studiousbackuppackage/Editor/Resources/Layouts/PopupWindow.uxml";
         private static PopupWindow window;
 
-        public PopupWindow()
+        public void OnEnable()
         {
-            Init();
-        }
-
-        static void Init()
-        {
-            window = (PopupWindow)EditorWindow.GetWindow(typeof(PopupWindow));
+            window = (PopupWindow)GetWindow(typeof(PopupWindow));
             window.titleContent = new GUIContent(  "Studios Backup Package");
             window.maxSize = new Vector2(480, 250);
             window.minSize = new Vector2(480, 250);
