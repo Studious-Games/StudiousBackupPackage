@@ -183,11 +183,7 @@ namespace Studious
 
                 if (evt.newValue == true && !_popupShown)
                 {
-                    //PopupWindow pu = new PopupWindow();
-                    //pu.ShowModal();
-
                     ScriptableObject.CreateInstance<PopupWindow>().ShowModal();
-
                     _popupShown = true;
                 }
                 if(!evt.newValue)
