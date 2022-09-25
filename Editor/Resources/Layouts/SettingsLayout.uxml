@@ -1,12 +1,12 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <Style src="project://database/Packages/com.studiousgames.studiousbackuppackage/Editor/Resources/StyleSheets/TestStyles.uss?fileID=7433441132597879392&amp;guid=a9b5e4bcb48bb7847b8f28d71d9c6805&amp;type=3#TestStyles" />
+    <Style src="project://database/Packages/com.studiousgames.studiousbackuppackage/Editor/Resources/StyleSheets/SettingsStyle.uss?fileID=7433441132597879392&amp;guid=a9b5e4bcb48bb7847b8f28d71d9c6805&amp;type=3#SettingsStyle" />
     <ui:VisualElement>
         <ui:VisualElement name="Header">
             <ui:Label text="Studious Backup Package" display-tooltip-when-elided="true" class="Title" />
         </ui:VisualElement>
         <ui:VisualElement name="Content" class="MainContent">
             <ui:GroupBox class="Groupbox">
-                <ui:DropdownField label="Zip Mode" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="ZipMode" binding-path="ZipMode" class="ZipDropdown" />
+                <ui:DropdownField label="Zip Mode" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="ZipMode" binding-path="ZipMode" class="ZipDropdown" style="display: none;" />
                 <ui:Toggle label="Log to Console" name="ConsoleLog" class="StudiousToggle Toggle" />
                 <ui:Toggle label="Backup on Exit" name="BackupExit" style="margin-left: 3px; margin-right: 3px; margin-top: 6px; margin-bottom: 6px;" />
                 <ui:Toggle label="Custom Backup Folder" name="CustomFolder" class="StudiousToggle" style="margin-left: 3px; margin-right: 3px; margin-top: 6px; margin-bottom: 6px;" />
