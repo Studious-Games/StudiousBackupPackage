@@ -27,7 +27,7 @@ namespace Studious
             rootVisualElement.Add(labelFromUXML);
 
             Label warning = rootVisualElement.Q<Label>("TextWarning");
-            warning.text = "<color=red>Warning:</color> When the option for <B>Backing up on Exit " +
+            warning.text = "<color=red>Warning:</color> When the option for <B>Back up on Exit " +
                 "is selected</b>, depending on the size of the project, Unity may appear to have hung." +
                 "\n\n" +
                 "Please let Unity finish what it is doing, Unity will close once the backup has " +
