@@ -1,7 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <Style src="project://database/Packages/com.studiousgames.studiousbackuppackage/Editor/Resources/StyleSheets/PopupStyle.uss?fileID=7433441132597879392&amp;guid=51c916048dffb3548b82fc30d6ab9b51&amp;type=3#PopupStyle" />
-    <ui:VisualElement>
-        <ui:Label text="Studious Backup Package" display-tooltip-when-elided="true" class="Title" />
-        <ui:Label text="&lt;b&gt;Warning&lt;/b&gt;: A backup is currently running in the background, and Unity will close as soon as it has finished." display-tooltip-when-elided="true" name="TextWarning" class="TextWarning" />
-    </ui:VisualElement>
-</ui:UXML>
