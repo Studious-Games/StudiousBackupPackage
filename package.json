@@ -16,7 +16,7 @@
   },
   "type": "library",
   "dependencies": {
-    "com.unity.nuget.newtonsoft-json": "2.0.0"
+    "com.unity.nuget.newtonsoft-json": "3.0.2"
   },
   "description": "Provides the means to backup projects to a designated location, or in the projects root path."
 }
