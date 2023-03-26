@@ -21,13 +21,13 @@ namespace Studious
         private static CronusBackupProvider _instance;
 
         private const string _packagePath = "Packages/com.studiousgames.studiousbackuppackage/Editor/Resources/Layouts/SettingsLayout.uxml";
-        private static readonly Version pluginVersion = new Version(1, 0, 4);
-        private static readonly DateTime pluginDate = new DateTime(2022, 10, 31);
+        private static readonly Version _pluginVersion = new Version(1, 0, 4);
+        private static readonly DateTime _pluginDate = new DateTime(2022, 10, 31);
         private static VisualElement _rootElement;
         private static List<string> _defaultFolders = new List<string> { "Assets", "Packages", "ProjectSettings", "UserSettings" };
         private static List<string> _items = new List<string>();
         private static bool _backingUp = false;
-        private static Task<ZipResult> backupTask;
+        private static Task<ZipResult> _backupTask;
 
         public const string _settingsPath = "Preferences/Studious Games/Studious Backup";
 
@@ -283,7 +283,7 @@ namespace Studious
             UpdateNextBackup();
 
             Label version = _rootElement.Q<Label>("Version");
-            version.text = $"{pluginVersion} - ({pluginDate:d})";
+            version.text = $"{_pluginVersion} - ({_pluginDate:d})";
 
             Button defaultButton = _rootElement.Q<Button>("UseDefaults");
             defaultButton.clicked += () =>
@@ -340,10 +340,10 @@ namespace Studious
 
             zipPath = string.Format("{0}/{1}_backup_{2}.zip", zipPath, _productNameForFile, DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
 
-            backupTask = DoBackup(zipPath);
-            await Task.WhenAll(backupTask);
+            _backupTask = DoBackup(zipPath);
+            await Task.WhenAll(_backupTask);
 
-            if(backupTask.Result.Success)
+            if(_backupTask.Result.Success)
             {
                 FileInfo fileInfo = new FileInfo(zipPath);
                 string time = (EditorApplication.timeSinceStartup - startTime).ToString("0.00");
@@ -354,7 +354,7 @@ namespace Studious
             }
             else
             {
-                Logger.LogWarning(backupTask.Result.Message);
+                Logger.LogWarning(_backupTask.Result.Message);
             }
 
             _backingUp = false;
@@ -538,7 +538,7 @@ namespace Studious
                StartBackup();
 
             if (_backingUp)
-                backupTask.Wait();
+                _backupTask.Wait();
         }
 
         private static bool CanBackup()
